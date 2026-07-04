@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bot Panel</title>
+</head>
+<body style="font-family: Arial; text-align: center;">
+
+<h2>Bot Control Panel</h2>
+
+<button onclick="send('startbot')">🟢 Start Bot</button>
+<br><br>
+
+<button onclick="send('stop')">🛑 Stop Bot</button>
+<br><br>
+
+<button onclick="send('reset')">🧠 Reset Memory</button>
+
+<script>
+function send(cmd) {
+  Telegram.WebApp.sendData(cmd);
+}
+</script>
+
+</body>
+</html>
