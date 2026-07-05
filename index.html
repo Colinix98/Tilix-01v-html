@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tilix Control Panel</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --tg-bg: #ffffff;
+    --tg-text: #000000;
+    --tg-hint: #999999;
+    --tg-button: #2481cc;
+    --tg-button-text: #ffffff;
+    --tg-secondary-bg: #f0f0f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--tg-bg);
+    color: var(--tg-text);
+    padding: 16px;
+  }
+  h1 {
+    font-size: 20px;
+    margin: 0 0 4px 0;
+  }
+  .subtitle {
+    color: var(--tg-hint);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  .section {
+    margin-bottom: 24px;
+  }
+  .section-title {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tg-hint);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .btn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  button {
+    border: none;
+    border-radius: 12px;
+    padding: 14px 10px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--tg-secondary-bg);
+    color: var(--tg-text);
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+  button:active {
+    transform: scale(0.96);
+    opacity: 0.8;
+  }
+  .btn-full {
+    grid-column: span 2;
+  }
+  .btn-primary {
+    background: var(--tg-button);
+    color: var(--tg-button-text);
+  }
+  .btn-danger {
+    background: #e05353;
+    color: #ffffff;
+  }
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .toast.show {
+    opacity: 1;
+  }
+  #adminSection {
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<h1>🎛 Tilix Control Panel</h1>
+<div class="subtitle" id="greeting">Manage your Tilix experience</div>
+
+<div class="section">
+  <div class="section-title">Personality</div>
+  <div class="btn-grid">
+    <button onclick="sendAction('personality', 'friendly')">😊 Friendly</button>
+    <button onclick="sendAction('personality', 'sarcastic')">😏 Sarcastic</button>
+    <button onclick="sendAction('personality', 'professional')">💼 Professional</button>
+    <button onclick="sendAction('personality', 'funny')">🤪 Funny</button>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Your Data</div>
+  <div class="btn-grid">
+    <button class="btn-full" onclick="sendAction('profile')">👤 View Profile</button>
+    <button class="btn-full" onclick="sendAction('mymemory')">🧠 View Memory</button>
+    <button class="btn-full btn-danger" onclick="sendAction('reset')">🔄 Reset Memory</button>
+  </div>
+</div>
+
+<div class="section" id="adminSection">
+  <div class="section-title">Admin Controls</div>
+  <div class="btn-grid">
+    <button class="btn-primary" onclick="sendAction('admin_start')">🟢 Start Bot</button>
+    <button class="btn-danger" onclick="sendAction('admin_stop')">🛑 Stop Bot</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+
+  // Match the user's Telegram theme automatically
+  const root = document.documentElement.style;
+  const theme = tg.themeParams || {};
+  if (theme.bg_color) root.setProperty('--tg-bg', theme.bg_color);
+  if (theme.text_color) root.setProperty('--tg-text', theme.text_color);
+  if (theme.hint_color) root.setProperty('--tg-hint', theme.hint_color);
+  if (theme.button_color) root.setProperty('--tg-button', theme.button_color);
+  if (theme.button_text_color) root.setProperty('--tg-button-text', theme.button_text_color);
+  if (theme.secondary_bg_color) root.setProperty('--tg-secondary-bg', theme.secondary_bg_color);
+
+  // UI-only check — the bot re-verifies admin status server-side
+  // before acting on admin_start / admin_stop, so this is just
+  // to hide the buttons from non-admins for a cleaner interface.
+  const ADMIN_IDS = [2068940297];
+
+  const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+  if (user) {
+    document.getElementById('greeting').textContent =
+      `Hi, ${user.first_name}! Manage your Tilix experience.`;
+    if (ADMIN_IDS.includes(user.id)) {
+      document.getElementById('adminSection').style.display = 'block';
+    }
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1200);
+  }
+
+  function sendAction(action, value) {
+    const payload = { action };
+    if (value) payload.value = value;
+    showToast('Sending...');
+    tg.sendData(JSON.stringify(payload));
+  }
+</script>
+
+</body>
+</html>
